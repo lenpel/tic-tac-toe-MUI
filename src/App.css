@@ -2,8 +2,9 @@
   text-align: center;
 }
 
-.board {
-  margin: 10 auto;
+.reset {
+  /* margin: 30 auto; */
+  margin: 20px;
 }
 
 .board-row:after {

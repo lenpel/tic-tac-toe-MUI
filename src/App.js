@@ -1,6 +1,10 @@
 import React, { Component } from "react";
 import "./App.css";
 import Board from "./components/Board";
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
 
 class App extends Component {
 
@@ -110,14 +114,21 @@ class App extends Component {
 
     return (
       <div className="App">
-        <h1> TicTacToe </h1>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography component="div" variant="h4">
+              <Box textAlign="center">TicTacToe</Box>
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <div className='game-info'>{status}</div>
         <div className='game'>
           <Board className="board"
             squares={this.state.squares}
             handleClick={(i)=> this.handleClick(i)}
           />
-          <div className='game-info'>{status}</div>
-          <button onClick= {() => this.reset()}> Reset </button>
+
+          <button className="reset" onClick= {() => this.reset()}> Reset </button>
         </div>
 
       </div>
