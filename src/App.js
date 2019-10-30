@@ -3,8 +3,13 @@ import "./App.css";
 import Board from "./components/Board";
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
+import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
+import ComputerIcon from '@material-ui/icons/Computer';
+
+import AccessibilityIcon from '@material-ui/icons/Accessibility';
+
 
 class App extends Component {
 
@@ -17,7 +22,8 @@ class App extends Component {
     return {
       whoMoves: 'X',
       squares: Array(9).fill(null),
-      winner: null
+      winner: null,
+      gameType: null
     };
   }
 
@@ -25,30 +31,51 @@ class App extends Component {
     this.setState(this.initialState())
   }
 
-  handleClick(i) {
-    const squares = this.state.squares;
-    const player = this.state.whoMoves;
+  // gameType 1 - means 1 player vs computer
+  // gameType 2 - means 2 players
+  selectGameType (num) {
+    this.setState({gameType: num})
+  }
 
-    // no action if clicked on occupied square
-    if (squares[i]) {
+  handleClick(i) {
+    const newSquares = this.state.squares;
+    const player = this.state.whoMoves;
+    const gameType = this.state.gameType;
+
+    // first select the gameType - player vs player, player vs computer
+    if (!gameType) {
+      alert('Please select type of game.');
       return
     }
 
-    let winner = this.calculateWinner(squares);
-    if (player === 'O') {
-      alert('Please wait for your turn!')
+    // no action if clicked on occupied square or we have a winner
+    if (newSquares[i]) {
+      return
     }
 
-    if (!winner && player === 'X') {
-      squares[i] = 'X';
-      this.setState({
-        whoMoves: 'O', //computer's turn
-        squares: squares
-      })
-      winner = this.calculateWinner(this.state.squares);
-      if (!winner) {
-        this.computerMove(this.state.squares);
-      }
+    if (this.state.winner) {
+      alert('Game over! Winner is ' + this.state.winner);
+      return
+    }
+
+    // if playing vs computer, wait for your turn
+    if (player === 'O' && gameType === 1) {
+      alert('Please wait for your turn!');
+      return;
+    }
+
+    newSquares[i] = player;
+    const winner = this.calculateWinner(newSquares);
+
+    this.setState({
+        whoMoves: player === 'X'? 'O' : 'X',
+        squares: newSquares,
+        winner: winner
+    })
+
+    // gameType === 1 means player vs computer
+    if (!winner && gameType === 1) {
+      this.computerMove(newSquares);
     }
   }
 
@@ -69,12 +96,17 @@ class App extends Component {
         for (let i=0; i<9; i++) {
           if (!squares[i]) {
             squares[i] = 'O';
+            break;
           }
         }
       }
+
+      const winner = this.calculateWinner(squares);
+
       this.setState({
-          whoMoves: 'X',
-          squares: squares
+        squares: squares,
+        whoMoves: 'X',
+        winner: winner
       })
     }, 2000);
 }
@@ -111,24 +143,49 @@ class App extends Component {
       } else {
         status = 'Next player: ' + this.state.whoMoves;
     }
+    const gameTypeText = this.state.gameType === 1 ?
+      'player vs computer' :
+      this.state.gameType === 2? 'player vs player' : null;
 
+    if (!this.state.gameType) {
+      status = 'Please select type of game.'
+    }
     return (
       <div className="App">
         <AppBar position="static">
           <Toolbar>
-            <Typography component="div" variant="h4">
+            <Typography variant='h3' align='center' style={{flexGrow: 1}}>
               <Box textAlign="center">TicTacToe</Box>
             </Typography>
           </Toolbar>
         </AppBar>
-        <div className='game-info'>{status}</div>
+
+        {/* only display at the start of the game*/}
+        {!this.state.gameType &&
+          <div className="GameType">
+            <Button variant="contained" color='secondary'
+              onClick= {() => this.selectGameType(2)}
+              startIcon={<AccessibilityIcon/>}
+              endIcon={<AccessibilityIcon/>}> vs </Button>
+            <Button variant="contained" color='primary'
+              onClick= {() => this.selectGameType(1)}
+              startIcon={<AccessibilityIcon/>}
+              endIcon={<ComputerIcon />}> vs </Button>
+          </div>
+        }
+
+        <Typography variant='h5'>
+          {gameTypeText &&
+            <Box className='game-info' textAlign='center'>Game: {gameTypeText}</Box>}
+          <Box className='game-info' textAlign="center">{status}</Box>
+        </Typography>
+
         <div className='game'>
-          <Board className="board"
+          <Board
             squares={this.state.squares}
             handleClick={(i)=> this.handleClick(i)}
           />
-
-          <button className="reset" onClick= {() => this.reset()}> Reset </button>
+          <Button variant="contained" className="reset" onClick= {() => this.reset()}> Reset </Button>
         </div>
 
       </div>
