@@ -55,4 +55,8 @@ describe('TicTacToe game', () => {
     expect(winner).toEqual(null);
     expect(isEmtpySpot).toEqual(false);
   });
+
+  it("initializes the game with X's turn to play", () => {
+    expect(app.state().whoMoves).toEqual("X");
+  });
 })

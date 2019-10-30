@@ -3,13 +3,22 @@ import "./App.css";
 import Board from "./components/Board";
 
 class App extends Component {
+
   constructor(props) {
     super();
-    this.state = {
+    this.state = this.initialState();
+  }
+
+  initialState () {
+    return {
       whoMoves: 'X',
       squares: Array(9).fill(null),
       winner: null
-    }
+    };
+  }
+
+  reset () {
+    this.setState(this.initialState())
   }
 
   handleClick(i) {
@@ -108,6 +117,7 @@ class App extends Component {
             handleClick={(i)=> this.handleClick(i)}
           />
           <div className='game-info'>{status}</div>
+          <button onClick= {() => this.reset()}> Reset </button>
         </div>
 
       </div>
