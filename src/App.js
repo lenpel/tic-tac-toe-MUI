@@ -13,13 +13,47 @@ class App extends Component {
   }
 
   handleClick(i) {
-    const squares = this.state.squares;
-    squares[i] = this.state.whoMoves === 'X'? 'X' : 'O';
-    this.setState({
-      whoMoves: this.state.whoMoves === 'X'? 'O' : 'X',
-      squares: squares
-    })
+    let winner = this.calculateWinner(this.state.squares);
+    if (!winner && this.state.whoMoves === 'X') {
+      const squares = this.state.squares;
+      squares[i] = this.state.whoMoves === 'X'? 'X' : 'O';
+      this.setState({
+        whoMoves: 'O', //computer's turn
+        squares: squares
+      })
+      winner = this.calculateWinner(this.state.squares);
+      if (!winner) {
+        this.computerMove(this.state.squares);
+      }
+    }
   }
+
+  computerMove(squares) {
+    setTimeout(() => {
+      // first try middle, then corners, then rest
+      if (!squares[4]) {
+        squares[4] = 'O';
+      } else if (!squares[0]) {
+        squares[0] = 'O';
+      } else if (!squares[2]) {
+        squares[2] = 'O';
+      } else if (!squares[6]) {
+        squares[6] = 'O';
+      } else if (!squares[8]) {
+        squares[8] = 'O';
+      } else {
+        for (let i=0; i<9; i++) {
+          if (!squares[i]) {
+            squares[i] = 'O';
+          }
+        }
+      }
+      this.setState({
+          whoMoves: 'X',
+          squares: squares
+      })
+    }, 2000);
+}
 
   calculateWinner(squares) {
     const lines =
@@ -43,11 +77,15 @@ class App extends Component {
 
   render() {
     const winner = this.calculateWinner(this.state.squares);
+    const isEmtpySpot = this.state.squares.some(el => el === null);
+
     let status;
     if (winner) {
       status = 'Winner: ' + winner;
-    } else {
-      status = 'Next player: ' + this.state.whoMoves;
+    } else if (!isEmtpySpot) {
+        status = 'It\'s a draw!';
+      } else {
+        status = 'Next player: ' + this.state.whoMoves;
     }
 
     return (
