@@ -13,10 +13,21 @@ class App extends Component {
   }
 
   handleClick(i) {
-    let winner = this.calculateWinner(this.state.squares);
-    if (!winner && this.state.whoMoves === 'X') {
-      const squares = this.state.squares;
-      squares[i] = this.state.whoMoves === 'X'? 'X' : 'O';
+    const squares = this.state.squares;
+    const player = this.state.whoMoves;
+
+    // no action if clicked on occupied square
+    if (squares[i]) {
+      return
+    }
+
+    let winner = this.calculateWinner(squares);
+    if (player === 'O') {
+      alert('Please wait for your turn!')
+    }
+
+    if (!winner && player === 'X') {
+      squares[i] = 'X';
       this.setState({
         whoMoves: 'O', //computer's turn
         squares: squares
