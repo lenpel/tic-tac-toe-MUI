@@ -33,8 +33,17 @@ class App extends Component {
 
   // gameType 1 - means 1 player vs computer
   // gameType 2 - means 2 players
+  // gameType 3 - means computer vs computer
   selectGameType (num) {
     this.setState({gameType: num})
+  }
+
+  componentDidUpdate() {
+    // handle case for bot vs. bot
+    // and for case bot vs player - if it's bot's turn
+    if (this.state.gameType === 3 || (this.state.gameType === 1 && this.state.whoMoves === 'O')) {
+      this.computerMove(this.state.squares, this.state.whoMoves);
+    }
   }
 
   handleClick(i) {
@@ -42,70 +51,70 @@ class App extends Component {
     const player = this.state.whoMoves;
     const gameType = this.state.gameType;
 
-    // first select the gameType - player vs player, player vs computer
+    // no action without first selecting the gameType
     if (!gameType) {
       alert('Please select type of game.');
       return
     }
 
-    // no action if clicked on occupied square or we have a winner
-    if (newSquares[i]) {
+    // no action if gameType = 3 (computer vs computer)
+    if (gameType === 3) {
+      alert('Game for 2 bots. Just watch.');
       return
     }
 
+    // no action if game over
     if (this.state.winner) {
       alert('Game over! Winner is ' + this.state.winner);
       return
     }
 
-    // if playing vs computer, wait for your turn
+    // no action if clicked on occupied square
+    if (newSquares[i]) {
+      return
+    }
+
+    // no action if it's not player's turn
     if (player === 'O' && gameType === 1) {
       alert('Please wait for your turn!');
       return;
     }
 
+    // places a mark, check winner, change turns
     newSquares[i] = player;
     const winner = this.calculateWinner(newSquares);
+    const nextPlayer = player === 'X'? 'O' : 'X';
 
     this.setState({
-        whoMoves: player === 'X'? 'O' : 'X',
+        whoMoves: nextPlayer,
         squares: newSquares,
         winner: winner
     })
-
-    // gameType === 1 means player vs computer
-    if (!winner && gameType === 1) {
-      this.computerMove(newSquares);
-    }
   }
 
-  computerMove(squares) {
-    setTimeout(() => {
-      // first try middle, then corners, then rest
-      if (!squares[4]) {
-        squares[4] = 'O';
-      } else if (!squares[0]) {
-        squares[0] = 'O';
-      } else if (!squares[2]) {
-        squares[2] = 'O';
-      } else if (!squares[6]) {
-        squares[6] = 'O';
-      } else if (!squares[8]) {
-        squares[8] = 'O';
-      } else {
-        for (let i=0; i<9; i++) {
-          if (!squares[i]) {
-            squares[i] = 'O';
-            break;
-          }
-        }
-      }
+  computerMove(squares, player) {
+    let newSquares = squares;
+    const isEmtpySpot = newSquares.some(el => el === null);
 
-      const winner = this.calculateWinner(squares);
+    // no move if game over or no empty spots available
+    if (this.state.winner || !isEmtpySpot) {
+      return
+    }
+
+    // select indexes with empty squares
+    let emptySquares = [];
+    newSquares.forEach((el, index) => el === null ? emptySquares.push(index) : null)
+
+    setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * emptySquares.length);
+      newSquares[emptySquares[randomIndex]] = player;
+
+      const winner = this.calculateWinner(newSquares);
+      const nextPlayer = player === 'X'? 'O' : 'X';
 
       this.setState({
-        squares: squares,
-        whoMoves: 'X',
+        squares: newSquares,
+        whoMoves: nextPlayer,
         winner: winner
       })
     }, 2000);
@@ -145,9 +154,10 @@ class App extends Component {
     }
     const gameTypeText = this.state.gameType === 1 ?
       'player vs computer' :
-      this.state.gameType === 2? 'player vs player' : null;
+      this.state.gameType === 2? 'player vs player' :
+      this.state.gameType === 3? 'bot vs bot' : null;
 
-    if (!this.state.gameType) {
+    if (!gameTypeText) {
       status = 'Please select type of game.'
     }
     return (
@@ -170,6 +180,10 @@ class App extends Component {
             <Button variant="contained" color='primary'
               onClick= {() => this.selectGameType(1)}
               startIcon={<AccessibilityIcon/>}
+              endIcon={<ComputerIcon />}> vs </Button>
+            <Button variant="contained" color='default'
+              onClick= {() => this.selectGameType(3)}
+              startIcon={<ComputerIcon/>}
               endIcon={<ComputerIcon />}> vs </Button>
           </div>
         }
